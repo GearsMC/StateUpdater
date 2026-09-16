@@ -163,4 +163,31 @@ class BlockStateUpdaterTest {
         assertFalse(states.containsKey("active"));
         assertEquals("dormant", states.getString("creaking_heart_state"));
     }
+
+    /**
+     * 1.26.30 adımı özelliği olmayan {@code minecraft:potent_sulfur}'a {@code potent_sulfur_state=dry} ekler. Hedef
+     * sürüm daha eskiyse uygulanmaz; özellik zaten varsa (daha yeni sürümle yazılmış veri) değerine dokunmaz.
+     */
+    @Test
+    void testAddPotentSulfurState_1_26_30() {
+        var withoutState = NbtMap.builder()
+                .putString("name", "minecraft:potent_sulfur")
+                .putCompound("states", NbtMap.EMPTY)
+                .build();
+        var version_1_26_30 = BlockStateUpdater_1_26_30.INSTANCE.getVersion();
+
+        var upgraded = BlockStateUpdaters.updateBlockState(withoutState, version_1_26_30);
+        assertEquals("dry", upgraded.getCompound("states").getString("potent_sulfur_state"));
+
+        var olderTarget = BlockStateUpdaters.updateBlockState(withoutState, BlockStateUpdater_1_21_110.INSTANCE.getVersion());
+        assertFalse(olderTarget.getCompound("states").containsKey("potent_sulfur_state"));
+
+        var wet = BlockStateUpdaters.updateBlockState(
+                withoutState.toBuilder()
+                        .putCompound("states", NbtMap.builder().putString("potent_sulfur_state", "wet").build())
+                        .build(),
+                version_1_26_30
+        );
+        assertEquals("wet", wet.getCompound("states").getString("potent_sulfur_state"));
+    }
 }
