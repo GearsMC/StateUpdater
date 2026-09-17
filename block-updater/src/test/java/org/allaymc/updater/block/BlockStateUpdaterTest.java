@@ -190,4 +190,41 @@ class BlockStateUpdaterTest {
         );
         assertEquals("wet", wet.getCompound("states").getString("potent_sulfur_state"));
     }
+
+    /**
+     * 1.26.50 adımı eski merdivene köşe, çit/panel/parmaklık/tuzak ipine bağlantı durumlarını varsayılanla ekler. Değer
+     * zaten varsa (PocketMine'ın 1.26.50 verisi) dokunmaz; bağlantı byte olarak eklenir.
+     */
+    @Test
+    void testAddCornerAndConnections_1_26_50() {
+        var version = BlockStateUpdater_1_26_50.INSTANCE.getVersion();
+        var stairs = BlockStateUpdaters.updateBlockState(NbtMap.builder()
+                .putString("name", "minecraft:oak_stairs")
+                .putCompound("states", NbtMap.builder().putByte("upside_down_bit", (byte) 1).putInt("weirdo_direction", 2).build())
+                .build(), version);
+        assertEquals("none", stairs.getCompound("states").getString("minecraft:corner"));
+        assertEquals(1, stairs.getCompound("states").getByte("upside_down_bit"));
+
+        for (var name : new String[]{"minecraft:oak_fence", "minecraft:glass_pane", "minecraft:iron_bars", "minecraft:trip_wire"}) {
+            var states = BlockStateUpdaters.updateBlockState(NbtMap.builder()
+                    .putString("name", name)
+                    .putCompound("states", NbtMap.EMPTY)
+                    .build(), version).getCompound("states");
+            for (var direction : new String[]{"north", "east", "south", "west"}) {
+                assertEquals((byte) 0, states.get("minecraft:connection_" + direction), name + " " + direction);
+            }
+        }
+
+        var connected = BlockStateUpdaters.updateBlockState(NbtMap.builder()
+                .putString("name", "minecraft:oak_fence")
+                .putCompound("states", NbtMap.builder().putByte("minecraft:connection_north", (byte) 1).build())
+                .build(), version);
+        assertEquals((byte) 1, connected.getCompound("states").get("minecraft:connection_north"));
+
+        var olderTarget = BlockStateUpdaters.updateBlockState(NbtMap.builder()
+                .putString("name", "minecraft:oak_stairs")
+                .putCompound("states", NbtMap.EMPTY)
+                .build(), BlockStateUpdater_1_26_30.INSTANCE.getVersion());
+        assertFalse(olderTarget.getCompound("states").containsKey("minecraft:corner"));
+    }
 }
