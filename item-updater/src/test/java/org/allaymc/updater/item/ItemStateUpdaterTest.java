@@ -95,4 +95,37 @@ class ItemStateUpdaterTest {
         assertEquals("minecraft:charcoal", resultShort.getString("Name"));
         assertEquals(0, resultShort.getShort("Damage"));
     }
+
+    @Test
+    void updates_from_1_26_40_to_1_26_60() {
+        var bounce = ItemStateUpdaters.updateItemState(
+                NbtMap.builder().putString("Name", "minecraft:record_bounce").build(),
+                ItemStateUpdaters.LATEST_VERSION
+        );
+        assertEquals("minecraft:music_disc_bounce", bounce.getString("Name"));
+
+        var poplarBoat = ItemStateUpdaters.updateItemState(
+                NbtMap.builder().putString("Name", "minecraft:chest_boat").putShort("Damage", (short) 10).build(),
+                ItemStateUpdaters.LATEST_VERSION
+        );
+        assertEquals("minecraft:poplar_chest_boat", poplarBoat.getString("Name"));
+
+        var photo = ItemStateUpdaters.updateItemState(
+                NbtMap.builder().putString("Name", "minecraft:photo").build(),
+                ItemStateUpdaters.LATEST_VERSION
+        );
+        assertEquals("minecraft:photo_item", photo.getString("Name"));
+
+        var frostbiteEgg = ItemStateUpdaters.updateItemState(
+                NbtMap.builder().putString("Name", "minecraft:spawn_egg").putShort("Damage", (short) 155).build(),
+                ItemStateUpdaters.LATEST_VERSION
+        );
+        assertEquals("minecraft:frostbite_spawn_egg", frostbiteEgg.getString("Name"));
+
+        var before = ItemStateUpdaters.updateItemState(
+                NbtMap.builder().putString("Name", "minecraft:spawn_egg").putShort("Damage", (short) 155).build(),
+                ItemStateUpdater_1_26_50.INSTANCE.getVersion()
+        );
+        assertEquals("minecraft:spawn_egg", before.getString("Name"));
+    }
 }

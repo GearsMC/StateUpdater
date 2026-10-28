@@ -227,4 +227,52 @@ class BlockStateUpdaterTest {
                 .build(), BlockStateUpdater_1_26_30.INSTANCE.getVersion());
         assertFalse(olderTarget.getCompound("states").containsKey("minecraft:corner"));
     }
+
+    /**
+     * 1.26.60 adımı eski kızıl taş tozuna yön, koro bitkisine ve ateşe bağlantı durumlarını varsayılanla ekler. Mevcut
+     * değerlere ve 1.26.50 hedefine dokunmaz.
+     */
+    @Test
+    void testAddRedstoneAndConnections_1_26_60() {
+        var version = BlockStateUpdater_1_26_60.INSTANCE.getVersion();
+        var wire = BlockStateUpdaters.updateBlockState(NbtMap.builder()
+                .putString("name", "minecraft:redstone_wire")
+                .putCompound("states", NbtMap.builder().putInt("redstone_signal", 7).build())
+                .build(), version).getCompound("states");
+        assertEquals(7, wire.getInt("redstone_signal"));
+        for (var direction : new String[]{"north", "east", "south", "west"}) {
+            assertEquals("none", wire.getString("redstone_" + direction), direction);
+        }
+
+        var chorus = BlockStateUpdaters.updateBlockState(NbtMap.builder()
+                .putString("name", "minecraft:chorus_plant")
+                .putCompound("states", NbtMap.EMPTY)
+                .build(), version).getCompound("states");
+        assertEquals(6, chorus.size());
+        for (var direction : new String[]{"north", "east", "south", "west", "up", "down"}) {
+            assertEquals((byte) 0, chorus.get("minecraft:connection_" + direction), direction);
+        }
+
+        var fire = BlockStateUpdaters.updateBlockState(NbtMap.builder()
+                .putString("name", "minecraft:fire")
+                .putCompound("states", NbtMap.builder().putInt("age", 3).build())
+                .build(), version).getCompound("states");
+        assertEquals(3, fire.getInt("age"));
+        assertFalse(fire.containsKey("minecraft:connection_down"));
+        for (var direction : new String[]{"north", "east", "south", "west", "up"}) {
+            assertEquals((byte) 0, fire.get("minecraft:connection_" + direction), direction);
+        }
+
+        var connectedWire = BlockStateUpdaters.updateBlockState(NbtMap.builder()
+                .putString("name", "minecraft:redstone_wire")
+                .putCompound("states", NbtMap.builder().putString("redstone_north", "up").putInt("redstone_signal", 0).build())
+                .build(), version).getCompound("states");
+        assertEquals("up", connectedWire.getString("redstone_north"));
+
+        var olderTarget = BlockStateUpdaters.updateBlockState(NbtMap.builder()
+                .putString("name", "minecraft:fire")
+                .putCompound("states", NbtMap.builder().putInt("age", 0).build())
+                .build(), BlockStateUpdater_1_26_50.INSTANCE.getVersion());
+        assertFalse(olderTarget.getCompound("states").containsKey("minecraft:connection_up"));
+    }
 }

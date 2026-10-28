@@ -8,7 +8,8 @@ Bu depo [AllayMC/StateUpdater](https://github.com/AllayMC/StateUpdater)'ın Gear
 
 - **Neden fork:** yukarı akışın 1.26.30 adımı Maven'a yayımlanmadı. 26.50'nin eklediği blok durumları
   (merdivende `minecraft:corner`; çit, cam panel, parmaklık ve tuzak ipinde `minecraft:connection_*`) için adımı
-  biz yazıyoruz.
+  biz yazıyoruz. 26.60'ın eklediği durumlar (kızıl taş tozunda `redstone_*`; koro bitkisi ve ateşte
+  `minecraft:connection_*`) ve 1.26.40–1.26.60 eşya adımları da fork'ta (`1.26.60-G1`).
 - **Sürüm:** fork'a özgü değişiklik içeren modülün sürümü `-G<n>` ekiyle yazılır (ör. `1.26.50-G1`), Allay'in
   `gradle/libs.versions.toml` dosyası da aynı sürümü ister. Bu sürüm Maven'da olmadığı için klasör eksikse Allay
   derlemesi sessizce eski kütüphaneye düşmez, açıkça durur.
